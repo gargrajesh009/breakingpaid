@@ -15,7 +15,7 @@ const steps = [
   {
     icon: ShieldCheck,
     title: 'Step 2 · Enter the UPI ID',
-    body: "We check that the handle after the @ (like okhdfcbank or ybl) matches a known bank or app, as a quick sanity check. This isn't real verification — a UPI ID can only truly be confirmed valid by your bank's app when you actually scan and pay.",
+    body: "Type it in, or tap the camera icon to scan a merchant's existing QR code and auto-fill it. Either way, we check the handle after the @ (like okhdfcbank or ybl) against known banks and apps as a quick sanity check — not real verification, which only your bank's app can do when you actually pay.",
   },
   {
     icon: Bookmark,
@@ -25,7 +25,7 @@ const steps = [
   {
     icon: QrCode,
     title: 'Step 4 · Generate & pay',
-    body: 'Hit Generate QR. If the payment was split, use the arrow buttons or dots to move between QR codes and scan each with your UPI app. Mark each one as paid to track progress with a green check.',
+    body: 'Hit Generate QR. If the payment was split, swipe left/right (or use the arrow buttons and dots) to move between QR codes and scan each with your UPI app. Mark each one as paid to track progress with a green check.',
   },
 ]
 
@@ -43,7 +43,7 @@ export function HowToUseModal({ open, onClose }: HowToUseModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/60 p-4 py-10 backdrop-blur-sm sm:items-center sm:py-4"
       onClick={onClose}
     >
       <div

@@ -1,6 +1,9 @@
 import { QRCodeSVG } from 'qrcode.react'
 import { ChevronLeft, ChevronRight, Check, Plus, Smartphone } from 'lucide-react'
+import { useRef } from 'react'
 import { formatInr, type PaymentChunk } from '../lib/upi'
+
+const SWIPE_THRESHOLD = 40
 
 interface QrCarouselProps {
   chunks: PaymentChunk[]
@@ -26,6 +29,27 @@ export function QrCarousel({ chunks, currentIndex, doneIndices, onNavigate, onTo
     onNavigate((currentIndex + 1) % chunks.length)
   }
 
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  function handleTouchStart(e: React.TouchEvent) {
+    const touch = e.touches[0]
+    touchStartRef.current = { x: touch.clientX, y: touch.clientY }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    const start = touchStartRef.current
+    touchStartRef.current = null
+    if (!start || chunks.length <= 1) return
+
+    const touch = e.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dx) < Math.abs(dy)) return
+
+    if (dx > 0) goPrev()
+    else goNext()
+  }
+
   return (
     <div className="flex w-full max-w-md animate-fade-slide-in flex-col items-center">
       <div className="mb-5 flex items-center gap-4">
@@ -40,7 +64,12 @@ export function QrCarousel({ chunks, currentIndex, doneIndices, onNavigate, onTo
           </button>
         )}
 
-        <div className="relative flex w-72 flex-col items-center rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+        <div
+          className="relative flex w-72 flex-col items-center rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl"
+          style={{ touchAction: 'pan-y' }}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {isDone && (
             <div className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/40">
               <Check className="h-5 w-5 text-white" strokeWidth={3} />

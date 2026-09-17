@@ -1,10 +1,10 @@
-import { AlertTriangle, Bookmark, ShieldCheck, Trash2, X } from 'lucide-react'
+import { AlertTriangle, Bookmark, Camera, ShieldCheck, Trash2, X } from 'lucide-react'
 import { type FormEvent, useState } from 'react'
 import { deleteContact, findContact, getContacts, saveContact, type UpiContact } from '../lib/contacts'
+import { UPI_ID_PATTERN } from '../lib/upi'
 import { getHandleInfo } from '../lib/upiHandles'
 import { Logo } from './Logo'
-
-const UPI_ID_PATTERN = /^[\w.-]{2,256}@[a-zA-Z]{2,64}$/
+import { ScanQrModal } from './ScanQrModal'
 
 interface PaymentFormProps {
   onGenerate: (amount: number, upiId: string) => void
@@ -16,6 +16,7 @@ export function PaymentForm({ onGenerate }: PaymentFormProps) {
   const [error, setError] = useState('')
   const [contacts, setContacts] = useState<UpiContact[]>(() => getContacts())
   const [savingNickname, setSavingNickname] = useState<string | null>(null)
+  const [showScanner, setShowScanner] = useState(false)
 
   const trimmedUpiId = upiId.trim()
   const isValidFormat = UPI_ID_PATTERN.test(trimmedUpiId)
@@ -55,11 +56,18 @@ export function PaymentForm({ onGenerate }: PaymentFormProps) {
     setSavingNickname(null)
   }
 
+  function handleScanned(scannedUpiId: string) {
+    setUpiId(scannedUpiId)
+    setSavingNickname(null)
+    setShowScanner(false)
+  }
+
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-md animate-fade-slide-in rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl"
-    >
+    <>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md animate-fade-slide-in rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-xl"
+      >
       <div className="mb-6 flex items-center gap-3">
         <Logo className="h-11 w-auto drop-shadow-lg" />
         <div>
@@ -84,16 +92,26 @@ export function PaymentForm({ onGenerate }: PaymentFormProps) {
 
       <label className="mb-2 block">
         <span className="mb-1.5 block text-sm font-medium text-white/70">UPI ID</span>
-        <input
-          type="text"
-          placeholder="name@upi"
-          value={upiId}
-          onChange={(e) => {
-            setUpiId(e.target.value)
-            setSavingNickname(null)
-          }}
-          className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-indigo-400/60 focus:bg-white/10 focus:ring-2 focus:ring-indigo-400/30"
-        />
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="name@upi"
+            value={upiId}
+            onChange={(e) => {
+              setUpiId(e.target.value)
+              setSavingNickname(null)
+            }}
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 pr-12 text-base text-white placeholder-white/30 outline-none transition focus:border-indigo-400/60 focus:bg-white/10 focus:ring-2 focus:ring-indigo-400/30"
+          />
+          <button
+            type="button"
+            onClick={() => setShowScanner(true)}
+            aria-label="Scan a merchant QR code to fill in the UPI ID"
+            className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white"
+          >
+            <Camera className="h-4.5 w-4.5" />
+          </button>
+        </div>
       </label>
 
       {isValidFormat && handleInfo && (
@@ -212,6 +230,9 @@ export function PaymentForm({ onGenerate }: PaymentFormProps) {
       >
         Generate QR
       </button>
-    </form>
+      </form>
+
+      {showScanner && <ScanQrModal onClose={() => setShowScanner(false)} onScanned={handleScanned} />}
+    </>
   )
 }

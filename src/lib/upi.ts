@@ -1,5 +1,22 @@
 const MAX_CHUNK_PAISE = 1999_00
 
+export const UPI_ID_PATTERN = /^[\w.-]{2,256}@[a-zA-Z]{2,64}$/
+
+/** Pulls a UPI ID out of scanned QR text — either a bare VPA, or the `pa` param
+ * of a `upi://pay?...` deep link (how merchant UPI QR codes encode it). */
+export function extractUpiId(text: string): string | null {
+  const trimmed = text.trim()
+  if (UPI_ID_PATTERN.test(trimmed)) return trimmed
+
+  try {
+    const pa = new URL(trimmed).searchParams.get('pa')
+    if (pa && UPI_ID_PATTERN.test(pa)) return pa
+  } catch {
+    // not a URL — no UPI ID to extract
+  }
+  return null
+}
+
 export interface PaymentChunk {
   index: number
   amount: number
